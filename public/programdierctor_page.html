@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student Dashboard - University Management System</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+      }
+
+      .dashboard-wrapper {
+        display: flex;
+        align-items: flex-start;
+      }
+
+      .sidebar {
+        width: 250px;
+        background-color: #2c3e50;
+        color: white;
+        padding: 20px;
+        transition: width 0.3s, height 0.3s;
+        height: 100vh;
+        overflow-y: auto;
+      }
+
+      .sidebar a {
+        color: #ccc;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+      }
+
+      .sidebar a:hover {
+        color: white;
+        background-color: #34495e;
+        transform: translateX(5px);
+      }
+
+      .sidebar h2 {
+        margin-bottom: 20px;
+        color: #fff;
+        font-size: 24px;
+      }
+
+      .sidebar ul {
+        list-style: none;
+        padding: 0;
+      }
+
+      .sidebar li {
+        margin-bottom: 10px;
+      }
+
+      .dashboard-container {
+        flex-grow: 1;
+        padding: 20px;
+      }
+
+      header h1 {
+        font-size: 36px;
+        color: #333;
+        margin-bottom: 20px;
+      }
+
+      h2 {
+        font-size: 24px;
+        color: #555;
+        margin-bottom: 20px;
+      }
+
+      ul {
+        list-style: none;
+        padding: 0;
+      }
+
+      li {
+        padding: 15px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 15px;
+      }
+
+      li:hover {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        transform: translateY(-3px);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="dashboard-wrapper">
+      <nav class="sidebar">
+        <h2>Dashboard</h2>
+        <ul>
+          <li>
+            <a href="#" onclick="showCourses(event)"
+              ><i class="fas fa-book" showCourses></i> Enrolled Courses</a
+            >
+          </li>
+          <li>
+            <a href="#"><i class="fas fa-sign-out-alt"></i> Logout</a>
+          </li>
+        </ul>
+      </nav>
+      <div class="dashboard-container">
+        <header>
+          <h1>Welcome Back</h1>
+        </header>
+        <div id="enrolledCourses">
+          <h2>Enrolled Courses</h2>
+          <ul id="coursesList"></ul>
+        </div>
+      </div>
+    </div>
+    <script>
+      async function fetchCourses() {
+        try {
+          const response = await fetch("/api/courses");
+          if (!response.ok) throw new Error("Failed to fetch");
+          const courses = await response.json();
+          return courses;
+        } catch (error) {
+          console.error("Error fetching enrolled courses:", error);
+          return [];
+        }
+      }
+
+      async function enroll(idx, courseId) {
+        const email = document.querySelector("#studentemail" + idx).value;
+        const res = await fetch("http://127.0.0.1:3000/api/enrollments", {
+          method: "POST",
+          body: JSON.stringify({
+            email,
+            courseId,
+          }),
+        });
+      }
+
+      async function showCourses(event) {
+        event.preventDefault();
+        const courses = (await fetchCourses()).data;
+        const coursesList = document.getElementById("coursesList");
+        coursesList.innerHTML = ""; // Clear existing courses
+
+        courses.forEach((course, idx) => {
+          const li = document.createElement("li");
+          li.textContent = course.name; // Assume the course object has a name property
+          const studentemail = document.createElement("input");
+          studentemail.id = "studentemail" + idx;
+          li.appendChild(studentemail);
+          const addBtn = document.createElement("button");
+          addBtn.setAttribute("onclick", `enroll(${idx}, "${course.id}")`);
+          addBtn.innerHTML = "Add";
+          li.appendChild(addBtn);
+          coursesList.appendChild(li);
+        });
+      }
+    </script>
+  </body>
+</html>

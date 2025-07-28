@@ -1,0 +1,78 @@
+POST http://localhost:3000/api/login HTTP/1.1
+content-type: application/json 
+
+{
+      "type" : "student",
+    "email": "samiraaa",
+    "password": "1222"
+}
+ 
+###
+
+POST http://localhost:3000/api/signup HTTP/1.1
+content-type: application/json
+
+{
+    "type" : "student",
+    "name":"shahd",
+    "email": "shahd@gmail.com",
+    "password": "100"
+}
+
+###
+
+POST http://localhost:3000/api/signup HTTP/1.1
+content-type: application/json
+
+{
+    "type" : "instructors",
+    "name":"ali",
+    "email": "m767",
+    "password": "9990"
+}
+
+###
+
+
+POST http://localhost:3000/api/courses HTTP/1.1
+content-type: application/json
+
+{
+     "name":"datamining",
+    "description": "oopt"
+}
+
+
+###
+GET http://localhost:3000/api/courses?id=ac3935d4-f799-496d-8fac-4eb93e376641 HTTP/1.1
+content-type: application/json
+
+###
+
+POST http://localhost:3000/api/enrollments HTTP/1.1
+content-type: application/json
+
+{
+     "email":"samiraaa",
+    "course_id": "ac3935d4-f799-496d-8fac-4eb93e376641"
+}
+
+###
+
+GET http://localhost:3000/api/getenrollments?email=samira HTTP/1.1
+content-type: application/json
+
+
+###
+
+POST http://localhost:3000/api/uplodsummary/lectures HTTP/1.1
+content-type: application/json
+
+{
+    "course_id": "lklklklom",
+  "title": " knowledge lecture1",
+  "description": "knowledge types",
+  "lecture_url": "https://31.filelu.com/d/w53fd6lvjqqnjjtafsmmu5nxrcv6mcw642bz42a3zyte4vnpgip6rk4je6smxk7bqlm4bayb/Lec_5___40_4__41_.pdf",
+  "uploaded_by": "de8a1133-5650-4e03-9b69-c2482e045817",
+    "upload_data": "5pm"
+    }

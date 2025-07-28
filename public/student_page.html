@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student Dashboard - University Management System</title>
+    <style>
+      body {
+        font-family: "Roboto", sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+
+      .dashboard-wrapper {
+        display: flex;
+        width: 100%;
+        max-width: 1200px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        overflow: hidden;
+      }
+
+      .sidebar {
+        width: 250px;
+        background-color: #285943; /* Green color */
+        color: #285943;
+        padding: 20px;
+        transition: width 0.3s, height 0.3s;
+        height: 100vh;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .sidebar .logo {
+        width: 80%;
+        margin-bottom: 20px;
+      }
+
+      .sidebar h2 {
+        margin-bottom: 20px;
+        color: #fff;
+        font-size: 24px;
+        text-align: center;
+      }
+
+      .sidebar ul {
+        list-style: none;
+        padding: 0;
+        width: 100%;
+      }
+
+      .sidebar li {
+        margin-bottom: 10px;
+        width: 100%;
+      }
+
+      .sidebar a {
+        color: #285943;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        transition: background-color 0.3s, transform 0.3s;
+        width: 100%;
+        background-color: rgba(255, 255, 255, 0.1); /* Solid background color */
+      }
+
+      .sidebar a:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+        transform: translateX(5px);
+      }
+
+      .sidebar a i {
+        margin-right: 10px;
+      }
+
+      .dashboard-container {
+        flex-grow: 1;
+        padding: 40px;
+        background-color: #fff;
+        border-radius: 10px;
+        margin: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      header h1 {
+        font-size: 36px;
+        color: #333;
+        margin-bottom: 20px;
+        font-weight: 700;
+      }
+
+      h2 {
+        font-size: 24px;
+        color: #555;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #285943;
+        padding-bottom: 10px;
+      }
+
+      ul {
+        list-style: none;
+        padding: 0;
+      }
+
+      ul li {
+        display: block;
+        padding: 15px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 15px;
+        transition: box-shadow 0.3s, transform 0.3s;
+      }
+
+      ul li:hover {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        transform: translateY(-3px);
+      }
+
+      a {
+        color: #285943;
+        text-decoration: none;
+        transition: color 0.3s;
+      }
+
+      a:hover {
+        color: #1f4431;
+      }
+
+      @media (max-width: 768px) {
+        .dashboard-wrapper {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .sidebar {
+          width: 100%;
+          height: auto;
+          padding: 10px;
+        }
+
+        .dashboard-container {
+          margin: 10px;
+        }
+      }
+    </style>
+    <!-- Font Awesome for icons -->
+    <script
+      src="https://kit.fontawesome.com/a076d05399.js"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <div class="dashboard-wrapper">
+      <nav class="sidebar">
+        <img
+          src="images/GU-Powered-by-ASU-Colored.png"
+          alt="Logo"
+          class="logo"
+        />
+        <h2>Dashboard</h2>
+        <ul>
+          <li>
+            <a href="#" onclick="showEnrolledCourses(event)"
+              ><i class="fas fa-book"></i> Enrolled Courses</a
+            >
+          </li>
+          <li>
+            <a href="#"><i class="fas fa-bullhorn"></i> Announcements</a>
+          </li>
+          <li>
+            <a href="#"><i class="fas fa-sign-out-alt"></i> Logout</a>
+          </li>
+        </ul>
+      </nav>
+      <div class="dashboard-container">
+        <header>
+          <h1 id="welcomeMessage">Welcome Back</h1>
+        </header>
+        <div id="enrolledCourses">
+          <h2>Enrolled Courses</h2>
+          <ul id="coursesList"></ul>
+        </div>
+        <div id="announcements">
+          <h2>Announcements</h2>
+          <ul id="announcementsList"></ul>
+        </div>
+      </div>
+    </div>
+    <script>
+      // Function to fetch the enrolled courses
+      async function fetchEnrolledCourses() {
+        console.log("Loading");
+        try {
+          const response = await fetch(
+            "/api/enrollments?id=" + window.localStorage.getItem("userId")
+          );
+          if (!response.ok) throw new Error("Failed to fetch");
+          const courses = await response.json();
+          return courses;
+        } catch (error) {
+          console.error("Error fetching enrolled courses:", error);
+          return [];
+        }
+      }
+
+      // Function to show the enrolled courses
+      async function showEnrolledCourses(event) {
+        event.preventDefault();
+        const { courses } = await fetchEnrolledCourses();
+        console.log(courses);
+        const coursesList = document.getElementById("coursesList");
+        coursesList.innerHTML = ""; // Clear existing courses
+        courses.forEach((course) => {
+          const li = document.createElement("li");
+          const link = document.createElement("a");
+          link.href = "/courses.html?id=" + course.id;
+          link.textContent = course.name; // Assume the course object has a name property
+          link.dataset.courseId = course.id; // Add data-course-id attribute
+          li.appendChild(link);
+          coursesList.appendChild(li);
+        });
+      }
+
+      // Voice recognition setup
+      function setupVoiceRecognition() {
+        const recognition = new (window.SpeechRecognition ||
+          window.webkitSpeechRecognition)();
+        recognition.lang = "en-US";
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        recognition.onresult = (event) => {
+          let speechResult = event.results[0][0].transcript
+            .toLowerCase()
+            .trim()
+            .replace(/\s+/g, "")
+            .replace(/\./g, ""); // Remove dots and spaces
+          console.log("Result received: " + speechResult);
+
+          if (speechResult.includes("enrolledcourses")) {
+            speakText(
+              "Which course do you want to access? Here are your options:"
+            )
+              .then(async () => {
+                const { courses } = await fetchEnrolledCourses();
+                const courseNames = courses
+                  .map((course) =>
+                    course.name.replace(/\s+/g, "").toLowerCase()
+                  )
+                  .join(", ");
+                console.log("Available courses: " + courseNames);
+                return speakText(courseNames);
+              })
+              .then(() => {
+                return speakText(
+                  "Voice recognition is now enabled. Please say the name of the course you want to access."
+                );
+              })
+              .then(() => {
+                startCourseRecognition();
+              });
+          } else if (speechResult.includes("announcements")) {
+            window.location.href = "#announcements";
+          } else {
+            alert("Option not found");
+          }
+        };
+
+        recognition.onspeechend = () => {
+          recognition.stop();
+        };
+
+        recognition.onerror = (event) => {
+          console.error("Error occurred in recognition: " + event.error);
+          if (event.error === "no-speech") {
+            setTimeout(() => {
+              recognition.start();
+            }, 1000); // Restart recognition after a short delay
+          }
+        };
+
+        // Welcome message and options
+        const welcomeMessage = new SpeechSynthesisUtterance(
+          "Welcome to the student dashboard. Do you want to access enrolled courses or announcements?"
+        );
+        speechSynthesis.speak(welcomeMessage);
+
+        welcomeMessage.onend = () => {
+          recognition.start();
+        };
+      }
+
+      function startCourseRecognition() {
+        const recognition = new (window.SpeechRecognition ||
+          window.webkitSpeechRecognition)();
+        recognition.lang = "en-US";
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        recognition.onresult = (event) => {
+          let speechResult = event.results[0][0].transcript
+            .toLowerCase()
+            .trim()
+            .replace(/\s+/g, "")
+            .replace(/\./g, ""); // Remove dots and spaces
+          console.log("Result received: " + speechResult);
+          const coursesList = document.getElementById("coursesList");
+          const courses = Array.from(coursesList.children);
+
+          const course = courses.find(
+            (course) =>
+              course.textContent.replace(/\s+/g, "").toLowerCase() ===
+              speechResult
+          );
+          if (course) {
+            speakText(`Loading ${course.textContent} course page`).then(() => {
+              const courseId = course.querySelector("a").dataset.courseId;
+              window.location.href = "/courses.html?id=" + courseId;
+            });
+          } else {
+            alert("Course not found");
+          }
+        };
+
+        recognition.onspeechend = () => {
+          recognition.stop();
+        };
+
+        recognition.onerror = (event) => {
+          console.error("Error occurred in recognition: " + event.error);
+          if (event.error === "no-speech") {
+            setTimeout(() => {
+              recognition.start();
+            }, 1000); // Restart recognition after a short delay
+          }
+        };
+
+        recognition.start();
+      }
+
+      function speakText(text) {
+        return new Promise((resolve) => {
+          if ("speechSynthesis" in window) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.onend = () => {
+              setTimeout(resolve, 1000); // 1-second delay
+            };
+            window.speechSynthesis.speak(utterance);
+          } else {
+            resolve();
+          }
+        });
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        setWelcomeMessage();
+        showEnrolledCourses(new Event("DOMContentLoaded")).then(() => {
+          setupVoiceRecognition();
+        });
+      });
+
+      function setWelcomeMessage() {
+        const studentName = window.localStorage.getItem("studentName");
+        if (studentName) {
+          document.getElementById(
+            "welcomeMessage"
+          ).textContent = `Welcome ${studentName}`;
+        }
+      }
+    </script>
+  </body>
+</html>

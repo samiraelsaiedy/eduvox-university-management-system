@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - University Management System</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f7f7f7;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+      .container {
+        display: flex;
+        background-color: #ffffff;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        overflow: hidden;
+        max-width: 1000px;
+        width: 90%;
+      }
+      .illustration {
+        flex: 1;
+        background-color: #e8f4fd;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .illustration img {
+        max-width: 100%;
+        height: auto;
+      }
+      .login-form {
+        flex: 1;
+        padding: 40px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .logo {
+        max-width: 150px;
+        margin-bottom: 20px;
+      }
+      h2 {
+        color: #333333;
+      }
+      p {
+        color: #666666;
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      .input-group {
+        width: 100%;
+        margin-bottom: 15px;
+        position: relative;
+      }
+      .input-group label {
+        display: block;
+        color: #666666;
+        margin-bottom: 5px;
+      }
+      .input-group input,
+      .input-group select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #dddddd;
+        border-radius: 5px;
+      }
+      .input-group button {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        background-color: #0056b3;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 5px 10px;
+        cursor: pointer;
+      }
+      .actions {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+      .actions label {
+        display: flex;
+        align-items: center;
+        color: #666666;
+      }
+      .actions a {
+        color: #666666;
+        text-decoration: none;
+      }
+      .login-btn,
+      .signup-btn {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        margin-bottom: 10px;
+        cursor: pointer;
+      }
+      .login-btn {
+        background-color: #0056b3;
+        color: #ffffff;
+      }
+      .signup-btn {
+        background-color: #ffffff;
+        color: #0056b3;
+        border: 1px solid #0056b3;
+      }
+      .social-login {
+        text-align: center;
+      }
+      .social-login p {
+        color: #666666;
+        margin-bottom: 10px;
+      }
+      .social-icons a {
+        margin: 0 5px;
+      }
+      .social-icons img {
+        width: 30px;
+        height: 30px;
+      }
+      .feedback {
+        margin-top: 10px;
+        color: #0056b3;
+      }
+    </style>
+    <script>
+      async function handleLogin(event) {
+        event.preventDefault(); // Prevent form from submitting normally
+
+        const userID = document.getElementById("userID").value.trim();
+        const password = document.getElementById("password").value.trim();
+        const userType = document.getElementById("userType").value.trim();
+        const res = await fetch("/api/login", {
+          //url of the login endpoint
+          method: "POST",
+          body: JSON.stringify({ email: userID, password, type: userType }),
+        });
+
+        const resJSON = await res.json(); // handle the response returned from the server
+        if (resJSON.okay) {
+          window.localStorage.setItem("userId", resJSON.userId);
+          if (userType === "student") {
+            window.location = "/student_page.html";
+          } else if (userType === "program_director") {
+            window.location = "/programdierctor_page.html";
+          } else if (userType === "instructors") {
+            window.location = "/instructor_page.html";
+          }
+        } else {
+          speakText(
+            "Login failed. Please check your credentials and try again."
+          );
+        }
+      }
+
+      function startVoiceRecognition(inputId, callback) {
+        if ("webkitSpeechRecognition" in window) {
+          const recognition = new webkitSpeechRecognition();
+          recognition.continuous = false;
+          recognition.interimResults = false;
+          recognition.lang = "en-US";
+
+          recognition.onresult = function (event) {
+            let transcript = event.results[0][0].transcript
+              .toLowerCase()
+              .trim();
+            transcript = transcript.replace(/\.+$/, ""); // Remove trailing dots
+            document.getElementById(inputId).value = transcript;
+            document.getElementById("feedback").textContent =
+              "You have entered " +
+              transcript +
+              " for " +
+              inputId.replace("user", "User ID").replace("pass", "Password");
+            speakText(
+              "You have entered " +
+                transcript +
+                " for " +
+                inputId.replace("user", "User ID").replace("pass", "Password")
+            );
+            if (callback) callback();
+          };
+
+          recognition.onerror = function (event) {
+            console.error("Voice recognition error:", event.error);
+            document.getElementById("feedback").textContent =
+              "An error occurred. Please try again.";
+            speakText("An error occurred. Please try again.");
+            if (callback) callback(event.error);
+          };
+
+          recognition.start(); // Start recognition immediately
+        } else {
+          alert("Web Speech API is not supported by this browser.");
+        }
+      }
+
+      function startVoiceRecognitionForType(callback) {
+        if ("webkitSpeechRecognition" in window) {
+          const recognition = new webkitSpeechRecognition();
+          recognition.continuous = false;
+          recognition.interimResults = false;
+          recognition.lang = "en-US";
+
+          recognition.onresult = function (event) {
+            let transcript = event.results[0][0].transcript
+              .toLowerCase()
+              .trim();
+            transcript = transcript.replace(/\.+$/, ""); // Remove trailing dots
+
+            if (transcript.includes("student")) {
+              document.getElementById("userType").value = "student";
+            } else if (transcript.includes("program director")) {
+              document.getElementById("userType").value = "program_director";
+            } else if (transcript.includes("instructor")) {
+              document.getElementById("userType").value = "instructors";
+            }
+
+            document.getElementById("feedback").textContent =
+              "You have selected " +
+              document.getElementById("userType").value +
+              " as the user type.";
+            speakText(
+              "You have selected " +
+                document.getElementById("userType").value +
+                " as the user type."
+            );
+            if (callback) callback();
+          };
+
+          recognition.onerror = function (event) {
+            console.error("Voice recognition error:", event.error);
+            document.getElementById("feedback").textContent =
+              "An error occurred. Please try again.";
+            speakText("An error occurred. Please try again.");
+            if (callback) callback(event.error);
+          };
+
+          recognition.start(); // Start recognition immediately
+        } else {
+          alert("Web Speech API is not supported by this browser.");
+        }
+      }
+
+      function speakText(text) {
+        return new Promise((resolve) => {
+          if ("speechSynthesis" in window) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.onend = () => {
+              setTimeout(resolve, 300); // Shorter delay
+            };
+            window.speechSynthesis.speak(utterance);
+          } else {
+            resolve();
+          }
+        });
+      }
+
+      async function waitForUserResponse(inputId) {
+        return new Promise((resolve) => {
+          speakText(
+            "Listening for " +
+              inputId.replace("user", "User ID").replace("pass", "Password")
+          ).then(() => {
+            startVoiceRecognition(inputId, resolve);
+          });
+        });
+      }
+
+      async function waitForUserType() {
+        return new Promise((resolve) => {
+          speakText(
+            "Please say your user type. You can say student, program director, or instructor."
+          ).then(() => {
+            startVoiceRecognitionForType(resolve);
+          });
+        });
+      }
+
+      async function activateVoiceCommands() {
+        await speakText(
+          "Welcome to the University Management System login page. Voice commands are enabled."
+        );
+        await speakText("Please say your User ID.");
+        await waitForUserResponse("userID");
+        await speakText("Please say your Password.");
+        await waitForUserResponse("password");
+        await waitForUserType();
+        await speakText("Say 'Login' to log in.");
+        if ("webkitSpeechRecognition" in window) {
+          const recognition = new webkitSpeechRecognition();
+          recognition.continuous = true;
+          recognition.interimResults = false;
+          recognition.lang = "en-US";
+
+          recognition.onresult = function (event) {
+            const transcript = event.results[
+              event.results.length - 1
+            ][0].transcript
+              .toLowerCase()
+              .trim();
+            if (transcript.includes("login")) {
+              document.querySelector("button[type='submit']").click();
+              speakText("Logging in");
+            }
+          };
+
+          recognition.onerror = function (event) {
+            console.error("Voice command error:", event.error);
+            document.getElementById("feedback").textContent =
+              "An error occurred. Please try again.";
+            speakText("An error occurred. Please try again.");
+          };
+
+          recognition.start(); // Start recognition immediately
+          speakText("Voice commands activated. Say 'Login' to log in.");
+        } else {
+          alert("Web Speech API is not supported by this browser.");
+        }
+      }
+
+      async function confirmVoiceRecognition() {
+        await speakText(
+          "Would you like to use voice recognition for login? Please say yes or no."
+        );
+        if ("webkitSpeechRecognition" in window) {
+          const recognition = new webkitSpeechRecognition();
+          recognition.continuous = false;
+          recognition.interimResults = false;
+          recognition.lang = "en-US";
+
+          recognition.onresult = function (event) {
+            const transcript = event.results[0][0].transcript
+              .toLowerCase()
+              .trim();
+            if (transcript.includes("yes")) {
+              activateVoiceCommands();
+            } else {
+              speakText(
+                "Voice recognition disabled. You can manually enter your details."
+              );
+            }
+          };
+
+          recognition.onerror = function (event) {
+            console.error("Voice recognition error:", event.error);
+            speakText("An error occurred. Please try again.");
+          };
+
+          recognition.start(); // Start recognition immediately
+        } else {
+          alert("Web Speech API is not supported by this browser.");
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", confirmVoiceRecognition);
+    </script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="illustration">
+        <img src="images/imag 4.jpg" alt="Illustration" />
+      </div>
+      <div class="login-form">
+        <img
+          src="images/GU-Powered-by-ASU-Colored.png"
+          alt="Logo"
+          class="logo"
+        />
+        <h2>Welcome Back :)</h2>
+        <p>
+          Welcome to the University Management System! Please login to get
+          started.
+        </p>
+        <form onsubmit="handleLogin(event)">
+          <div class="input-group">
+            <label for="userID">User ID:</label>
+            <input type="text" id="userID" name="userID" required />
+            <button type="button" onclick="startVoiceRecognition('userID')">
+              🎤
+            </button>
+          </div>
+          <div class="input-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required />
+            <button type="button" onclick="startVoiceRecognition('password')">
+              🎤
+            </button>
+          </div>
+          <div class="input-group">
+            <label for="userType">User Type:</label>
+            <select id="userType" name="userType" required>
+              <option value="student">student</option>
+              <option value="program_director">program_director</option>
+              <option value="instructors">instructors</option>
+            </select>
+            <button type="button" onclick="startVoiceRecognitionForType()">
+              🎤
+            </button>
+          </div>
+          <div class="actions">
+            <label><input type="checkbox" /> Remember Me</label>
+            <a href="#">Forget Password?</a>
+          </div>
+          <button type="submit" class="login-btn">Login Now</button>
+          <button type="button" class="signup-btn">Create Account</button>
+        </form>
+        <div id="feedback" class="feedback"></div>
+      </div>
+    </div>
+  </body>
+</html>
